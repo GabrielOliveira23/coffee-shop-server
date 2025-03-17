@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String
+  price       Float
+  tags        String[]
+
+  @@map("products")
+}
+
+model Order {
+  id        String        @id @default(uuid())
+  value     Float
+  createdAt DateTime      @default(now())
+  address   Address       @relation(fields: [addressId], references: [id])
+  addressId String
+  paymentBy PaymentMethod
+
+  @@map("orders")
+}
+
+model Address {
+  id           String  @id @default(uuid())
+  cep          String
+  street       String
+  number       Int
+  neighborhood String
+  complement   String?
+  city         String
+  uf           String
+  orders       Order[]
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  PIX
+}
