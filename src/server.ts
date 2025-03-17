@@ -9,9 +9,12 @@ import {
   validatorCompiler,
 } from 'fastify-type-provider-zod'
 import { env } from './env'
+import { createOrderRoute } from './modules/order/routes/create-order.route'
+import { getAllOrdersRoute } from './modules/order/routes/get-all-orders.route'
+import { getOrderByIdRoute } from './modules/order/routes/get-order-by-id.route'
 import { createProductRoute } from './modules/products/routes/create-product.route'
 import { getAllProductsRoute } from './modules/products/routes/get-all-products.route'
-import { findProductRoute } from './modules/products/routes/get-product.route'
+import { getProductByIdRoute } from './modules/products/routes/get-product-by-id.route'
 
 const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -35,8 +38,12 @@ app.register(fastifySwaggerUi, {
 })
 
 app.register(createProductRoute)
-app.register(findProductRoute)
+app.register(getProductByIdRoute)
 app.register(getAllProductsRoute)
+
+app.register(createOrderRoute)
+app.register(getAllOrdersRoute)
+app.register(getOrderByIdRoute)
 
 app.listen({ port: env.PORT }).then(() => {
   console.log('HTTP server running')
