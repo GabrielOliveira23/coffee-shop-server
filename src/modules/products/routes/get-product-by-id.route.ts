@@ -2,17 +2,17 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 import { ProductService } from '../product.service'
 
-export const findProductRoute: FastifyPluginAsyncZod = async app => {
+export const getProductByIdRoute: FastifyPluginAsyncZod = async app => {
   app.get(
     '/products/:productId',
     {
       schema: {
-        operationId: 'findProductById',
+        operationId: 'getProductById',
         summary: 'Find a product by Id',
         tags: ['Product'],
         description: 'Description very cool',
         params: z.object({
-          productId: z.string(),
+          productId: z.string().uuid('ProductId invalid'),
         }),
         response: {
           200: z.object({

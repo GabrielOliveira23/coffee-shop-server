@@ -13,9 +13,9 @@ export const createProductRoute: FastifyPluginAsyncZod = async app => {
         description: 'Description very cool',
         body: z.object({
           name: z.string(),
-          description: z.string().min(4, 'Description too short'),
-          price: z.number().min(0, 'Price must be greater than 0'),
-          tags: z.array(z.string().min(3, 'Tag name too short')),
+          description: z.string().min(4, 'Description too short.'),
+          price: z.number().min(0, 'Price must be greater than 0.'),
+          tags: z.array(z.string().min(3, 'Tag name too short.')),
         }),
         response: {
           201: z.object({
