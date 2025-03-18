@@ -1,6 +1,5 @@
-import type { Product } from '../../interfaces/product.type'
 import { ProductRepository } from './product.repository'
-import type { CreateProductInput } from './product.types'
+import type { CreateProductInput, Product } from './product.types'
 
 export function ProductService() {
   const productRepository = new ProductRepository()
@@ -8,7 +7,7 @@ export function ProductService() {
   return {
     async createProduct(
       data: CreateProductInput
-    ): Promise<{ product: Product | null }> {
+    ): Promise<{ product: Omit<Product, 'image'> }> {
       const productExists = await productRepository.findByName(data.name)
 
       if (productExists) {
@@ -16,7 +15,6 @@ export function ProductService() {
       }
 
       const product = await productRepository.create(data)
-
       return { product }
     },
 
@@ -25,9 +23,29 @@ export function ProductService() {
       return { product }
     },
 
-    async getAllProducts(): Promise<{ products: Product[] }> {
+    async getAllProducts(): Promise<{
+      products: Array<
+        Omit<Product, 'image'> & {
+          image: string | null
+        }
+      >
+    }> {
       const products = await productRepository.findAll()
-      return { products }
+
+      const productsWithBase64Images = products.map(product => ({
+        ...product,
+        image: product.image ? product.image.toString('base64') : null,
+      }))
+
+      return { products: productsWithBase64Images }
+    },
+
+    async addImageToProduct(
+      id: string,
+      image: Buffer
+    ): Promise<{ product: Product }> {
+      const product = await productRepository.addImage(id, image)
+      return { product }
     },
   }
 }

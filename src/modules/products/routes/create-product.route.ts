@@ -27,6 +27,9 @@ export const createProductRoute: FastifyPluginAsyncZod = async app => {
               tags: z.array(z.string()),
             }),
           }),
+          400: z.object({
+            message: z.string(),
+          }),
         },
       },
     },
@@ -42,7 +45,7 @@ export const createProductRoute: FastifyPluginAsyncZod = async app => {
 
       if (product !== null) return reply.status(201).send({ product })
 
-      return reply.status(400)
+      return reply.status(400).send({ message: 'Error when creating product' })
     }
   )
 }

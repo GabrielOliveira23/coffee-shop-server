@@ -20,6 +20,7 @@ export const getAllProductsRoute: FastifyPluginAsyncZod = async app => {
                 description: z.string(),
                 price: z.number(),
                 tags: z.array(z.string()),
+                image: z.string().nullable(),
               })
             ),
           }),

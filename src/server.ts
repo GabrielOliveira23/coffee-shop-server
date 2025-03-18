@@ -1,4 +1,5 @@
 import { fastifyCors } from '@fastify/cors'
+import fastifyMultipart from '@fastify/multipart'
 import { fastifySwagger } from '@fastify/swagger'
 import { fastifySwaggerUi } from '@fastify/swagger-ui'
 import { fastify } from 'fastify'
@@ -12,6 +13,7 @@ import { env } from './env'
 import { createOrderRoute } from './modules/order/routes/create-order.route'
 import { getAllOrdersRoute } from './modules/order/routes/get-all-orders.route'
 import { getOrderByIdRoute } from './modules/order/routes/get-order-by-id.route'
+import { addProductImageRoute } from './modules/products/routes/add-product-image.route'
 import { createProductRoute } from './modules/products/routes/create-product.route'
 import { getAllProductsRoute } from './modules/products/routes/get-all-products.route'
 import { getProductByIdRoute } from './modules/products/routes/get-product-by-id.route'
@@ -40,6 +42,7 @@ app.register(fastifySwaggerUi, {
 app.register(createProductRoute)
 app.register(getProductByIdRoute)
 app.register(getAllProductsRoute)
+app.register(addProductImageRoute)
 
 app.register(createOrderRoute)
 app.register(getAllOrdersRoute)
