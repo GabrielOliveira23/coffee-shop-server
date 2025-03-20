@@ -28,10 +28,10 @@ export const getOrderByIdRoute: FastifyPluginAsyncZod = async app => {
     async (request, reply) => {
       const { orderId } = request.params
 
-      const { order } = await OrderService().getOrderById(orderId)
+      const result = await OrderService().getOrderById(orderId)
 
-      if (!order) return reply.status(404).send({ message: 'Order not found' })
-      return reply.status(200).send({ order })
+      if (!result) return reply.status(404).send({ message: 'Order not found' })
+      return reply.status(200).send({ order: result.order })
     }
   )
 }

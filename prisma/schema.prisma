@@ -19,14 +19,23 @@ model Product {
 }
 
 model Order {
-  id        String        @id @default(uuid())
+  id        String         @id @default(uuid())
+  products  OrderProduct[]
   value     Float
-  createdAt DateTime      @default(now())
-  address   Address       @relation(fields: [addressId], references: [id])
+  createdAt DateTime       @default(now())
+  address   Address        @relation(fields: [addressId], references: [id])
   addressId String
   paymentBy PaymentMethod
 
   @@map("orders")
+}
+
+model OrderProduct {
+  id        String @id @default(cuid())
+  order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   String
+  productId String
+  quantity  Int
 }
 
 model Address {

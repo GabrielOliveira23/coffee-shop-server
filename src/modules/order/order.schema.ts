@@ -10,8 +10,16 @@ const responseAddressSchema = z.object({
   complement: z.string().nullish(),
 })
 
+const responseOrderProductSchema = z.object({
+  productId: z.string(),
+  name: z.string(),
+  price: z.number(),
+  quantity: z.number(),
+})
+
 export const responseOrderSchema = z.object({
   id: z.string(),
+  products: z.array(responseOrderProductSchema),
   value: z.number(),
   paymentBy: z.enum(['CREDIT_CARD', 'DEBIT_CARD', 'MONEY']),
   address: responseAddressSchema,
@@ -29,7 +37,13 @@ const requestAddressSchema = z.object({
   complement: z.string().nullish(),
 })
 
+const requestOrderProductSchema = z.object({
+  productId: z.string(),
+  quantity: z.number(),
+})
+
 export const requestOrderSchema = z.object({
+  products: z.array(requestOrderProductSchema),
   value: z.number().gte(0, 'Value must be greater than 0.'),
   paymentBy: z.enum(['CREDIT_CARD', 'DEBIT_CARD', 'MONEY']),
   address: requestAddressSchema,

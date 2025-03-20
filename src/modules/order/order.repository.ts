@@ -1,15 +1,16 @@
-import type { PaymentMethod } from '@prisma/client'
 import { prisma } from '../../database/prisma-client'
+import type { Product } from '../products/product.types'
 import type {
   Address,
-  CreateAddressInput,
-  CreateOrderInput,
+  AddressInput,
   IOrderRepository,
-  Order,
+  OrderFromPrisma,
+  OrderInput,
+  OrderProductInput,
 } from './order.types'
 
 export class OrderRepository implements IOrderRepository {
-  private async createAddress(address: CreateAddressInput): Promise<Address> {
+  private async createAddress(address: AddressInput): Promise<Address> {
     return await prisma.address.create({ data: address })
   }
 
@@ -20,81 +21,95 @@ export class OrderRepository implements IOrderRepository {
   }
 
   private async ensureAddressExists(
-    addressData: CreateAddressInput
+    addressData: AddressInput
   ): Promise<Address> {
     const addressAlreadyExists = await this.findAddressByCep(addressData.cep)
     return addressAlreadyExists ?? (await this.createAddress(addressData))
   }
 
+  private calcTotal(
+    prismaProducts: Pick<Product, 'id' | 'name' | 'price'>[],
+    orderProducts: OrderProductInput[]
+  ) {
+    return orderProducts.reduce((acc, item) => {
+      const product = prismaProducts.find(p => p.id === item.productId)
+      return acc + (product ? product.price * item.quantity : 0)
+    }, 0)
+  }
+
   async create(
-    addressData: CreateAddressInput,
-    orderData: Omit<CreateOrderInput, 'address'>
-  ): Promise<Order> {
+    addressData: AddressInput,
+    { products: orderProducts, paymentBy }: Omit<OrderInput, 'address'>
+  ): Promise<Pick<OrderFromPrisma, 'order' | 'products'>> {
     const address = await this.ensureAddressExists(addressData)
+
+    const prismaProducts = await prisma.product.findMany({
+      where: { id: { in: orderProducts.map(p => p.productId) } },
+      select: { id: true, name: true, price: true },
+    })
+
+    if (prismaProducts.length !== orderProducts.length) {
+      throw new Error('Um ou mais produtos não existem.')
+    }
+
+    const totalValue = this.calcTotal(prismaProducts, orderProducts)
 
     const newOrder = await prisma.order.create({
       data: {
-        ...orderData,
+        paymentBy: paymentBy,
+        value: totalValue,
         addressId: address.id,
+        products: {
+          create: orderProducts.map(product => ({
+            productId: product.productId,
+            quantity: product.quantity,
+          })),
+        },
       },
       include: {
         address: true,
+        products: true,
       },
     })
 
-    return {
-      id: newOrder.id,
-      value: newOrder.value,
-      createdAt: newOrder.createdAt,
-      paymentBy: newOrder.paymentBy,
-      address: {
-        id: newOrder.address.id,
-        cep: newOrder.address.cep,
-        street: newOrder.address.street,
-        number: newOrder.address.number,
-        neighborhood: newOrder.address.neighborhood,
-        complement: newOrder.address.complement,
-        city: newOrder.address.city,
-        uf: newOrder.address.uf,
-      },
-    }
+    return { order: newOrder, products: prismaProducts }
   }
 
-  async findById(id: string): Promise<Order | null> {
+  async findById(id: string): Promise<OrderFromPrisma | null> {
     const order = await prisma.order.findUnique({
       where: { id },
-      include: { address: true },
+      include: { address: true, products: true },
     })
 
     if (!order) {
       return null
     }
 
-    return {
-      id: order.id,
-      value: order.value,
-      createdAt: order.createdAt,
-      paymentBy: order.paymentBy,
-      address: {
-        id: order.address.id,
-        cep: order.address.cep,
-        street: order.address.street,
-        number: order.address.number,
-        neighborhood: order.address.neighborhood,
-        complement: order.address.complement,
-        city: order.address.city,
-        uf: order.address.uf,
-      },
-    }
+    const products = await prisma.product.findMany({
+      where: { id: { in: order.products.map(p => p.productId) } },
+      select: { id: true, name: true, price: true },
+    })
+
+    return { order, orderProducts: order.products, products }
   }
 
-  async findAll(): Promise<Order[]> {
+  async findAll(): Promise<OrderFromPrisma[]> {
     const orders = await prisma.order.findMany({
       include: {
         address: true,
+        products: true,
       },
     })
 
-    return orders
+    return Promise.all(
+      orders.map(async order => {
+        const products = await prisma.product.findMany({
+          where: { id: { in: order.products.map(p => p.productId) } },
+          select: { id: true, name: true, price: true },
+        })
+        console.log(`findAll products ${products}`)
+        return { order, orderProducts: order.products, products }
+      })
+    )
   }
 }
