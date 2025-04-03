@@ -1,9 +1,16 @@
 services:
   service-pg:
     image: bitnami/postgresql
+    container_name: coffee-shop-server-pg
+    restart: always
     ports:
       - '5433:5432'
     environment:
-      - POSTGRES_USER=docker
-      - POSTGRES_PASSWORD=docker
-      - POSTGRES_DB=coffee-shop
+      POSTGRES_USER: docker
+      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: coffee-shop
+    volumes:
+      - pgdata:/bitnami/postgresql
+
+volumes:
+  pgdata:

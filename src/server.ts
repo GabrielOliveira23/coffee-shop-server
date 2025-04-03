@@ -9,6 +9,7 @@ import {
   serializerCompiler,
   validatorCompiler,
 } from 'fastify-type-provider-zod'
+import { seedProducts } from './database/prisma-client'
 import { env } from './env'
 import { createOrderRoute } from './modules/order/routes/create-order.route'
 import { getAllOrdersRoute } from './modules/order/routes/get-all-orders.route'
@@ -48,6 +49,16 @@ app.register(createOrderRoute)
 app.register(getAllOrdersRoute)
 app.register(getOrderByIdRoute)
 
-app.listen({ port: env.PORT }).then(() => {
-  console.log('HTTP server running')
-})
+async function startServer() {
+  try {
+    await seedProducts()
+    app.listen({ port: env.PORT }).then(() => {
+      console.log('🚀 HTTP server running on port', env.PORT)
+    })
+  } catch (error) {
+    console.error('❌ Failed to start server:', error)
+    process.exit(1)
+  }
+}
+
+startServer()
