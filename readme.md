@@ -8,6 +8,8 @@
 
 The **Coffee Shop** backend manages orders, products, and users, ensuring a smooth and secure shopping experience.
 
+🔗 **Frontend Repository:** [Coffee Shop Frontend](https://github.com/GabrielOliveira23/coffee-shop)
+
 ## 🛠️ Project Setup
 
 ### ✨ Prerequisits
